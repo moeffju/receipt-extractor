@@ -4,3 +4,5 @@ gem 'pdf-reader'
 gem 'pry'
 gem 'mail'
 gem 'pdfkit'
+gem 'wkhtmltopdf-binary'
+
