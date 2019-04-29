@@ -5,4 +5,4 @@ gem 'pry'
 gem 'mail'
 gem 'pdfkit'
 gem 'wkhtmltopdf-binary'
-
+gem 'toml-rb'
