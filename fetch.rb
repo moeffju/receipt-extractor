@@ -10,6 +10,7 @@ require 'net/imap'
 require 'mail'
 require 'base64'
 require 'pdfkit'
+require 'toml-rb'
 
 if ARGV.first == '--help' || ARGV.first == '-h'
   STDERR.puts <<_EOF_
@@ -35,17 +36,39 @@ Arguments:
           'FROM "name or email"'
           'SUBJECT "subject line"'
 _EOF_
+  exit 99
+end
+
+begin
+  @config = TomlRB.load_file('./config.toml', symbolize_keys: true)
+  unless @config.has_key? :server then
+    STDERR.puts <<_EOF_
+Error: Configuration file does not contain any [server.*] blocks.
+See `config.config.toml.sample` for an example.
+_EOF_
+    exit 2
+  end
+  if @config[:server].any?{ |k,v| [:host,:port,:ssl,:username,:password].any?{ |x| !v.has_key? x } } then
+    servers_with_errors = @config[:server].select{ |k,v| [:host,:port,:ssl,:username,:password].any?{ |x| !v.has_key? x} }.keys
+    STDERR.puts <<_EOF_
+Error: The following server block(s) are incomplete: #{servers_with_errors.join(', ')}
+See `config.config.toml.sample` for an example.
+_EOF_
+    exit 3
+  end
+  STDERR.puts "Loaded #{@config[:server].count} servers from configuration file: #{@config[:server].keys.join(', ')}"
+rescue Exception => e
+  STDERR.puts e
+  STDERR.puts <<_EOF_
+Error: No configuration file found.
+Create `config.toml` in the current working directory.
+See `config.config.toml.sample` for an example.
+_EOF_
   exit 1
 end
 
 @mode = :mobility_package
 @mode = :expenses if ARGV.shift == '--expenses'
-
-# list your servers here. this should go into a config file.
-SERVERS = [
-  {host: 'imap.gmail.com', port: 993, ssl: true, username: 'user@gmail.com', password: 'password'},
-  {host: 'mail.example.com', port: 143, ssl: false, username: 'user', password: 'password'},
-]
 
 # this is a list of IMAP filters that will be stepped through in order, combined with any filters given on the commandline
 FILTERS = <<_FILTERS_.split("\n").map(&:strip)
@@ -247,6 +270,7 @@ def helper_text_to_html(text)
   '<div class="mail-body"><p>'+text.split(/\n\n/).join('</p><p>').split(/\n/).join('<br>')+'</p></div>'
 end
 
-SERVERS.each do |server|
+@config[:server].each do |name, server|
+  STDERR.puts "Fetching from #{name}…"
   get_messages server[:host], server[:port], server[:ssl], server[:username], server[:password]
 end

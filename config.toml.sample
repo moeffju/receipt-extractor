@@ -1,0 +1,17 @@
+# Configuration for receipt-extractor
+# TOML reference: https://github.com/toml-lang/toml
+
+[server.gmail]
+host = 'imap.gmail.com'
+ssl = true
+port = 993
+username = 'user@gmail.com'
+password = 'password'
+
+[server.private]
+host = 'mail.example.com'
+ssl = false
+port = 143
+username = 'example'
+password = 'correct horse battery staple'
+
