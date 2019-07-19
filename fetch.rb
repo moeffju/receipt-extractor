@@ -24,7 +24,7 @@ Arguments:
 
   --expenses
         Switches to expenses mode (instead of mobility package mode). Currently
-        only effects which mytaxi payment methods are handled. Define the
+        only effects which FREE NOW payment methods are handled. Define the
         methods for each mode in the code in `PAYMENT_METHOD_MAP`.
   
   [filter]
@@ -78,7 +78,7 @@ FILTERS = <<_FILTERS_.split("\n").map(&:strip)
   FROM "payment@joincoup.com"
   SUBJECT "DriveNow eBilling"
   SUBJECT "emmy Rechnung"
-  FROM "mytaxi Payment"
+  FROM "@free-now.com"
   SUBJECT "trip with Uber"
   FROM "buchungsbestaetigung@bahn.de"
   SUBJECT "Deine MILES Rechnung"
@@ -108,7 +108,7 @@ TEXT_EMAIL_AFTER = <<_EOF_
 _EOF_
 
 PAYMENT_METHOD_MAP = {
-  mytaxi: {
+  free_now: {
     mobility_package: ['Bar', 'Kreditkarte, 123456******9876', 'Kreditkarte, 654321******6789'],
     expenses: ['Kreditkarte, 123123******1234', 'Kreditkarte, 123123******2345', nil],
   },
@@ -154,10 +154,10 @@ def handle_message(message)
     if from =~ /uber\..*@uber.com$/
       # create pdf from html
       handler = :pdf_from_html
-    elsif from =~ /@mytaxi.com$/
-      mytaxi_payment_method = message.text_part.body.decoded.match(/Bezahlart: \*(.*)\*/)[1] rescue nil
-      case mytaxi_payment_method
-      when PAYMENT_METHOD_MAP[:mytaxi][@mode]
+    elsif from =~ /@free-now.com$/
+      free_now_payment_method = message.text_part.body.decoded.match(/Bezahlart: \*(.*)\*/)[1] rescue nil
+      case free_now_payment_method
+      when PAYMENT_METHOD_MAP[:free_now][@mode]
         handler = :save_attachment
       else
         handler = :skip
