@@ -15,3 +15,13 @@ port = 143
 username = 'example'
 password = 'correct horse battery staple'
 
+[free_now.payment_methods]
+mobility_package = [
+  'Bar',
+  'Kreditkarte, 123456******9876',
+  'Kreditkarte, 654321******6789',
+]
+expenses = [
+  'Kreditkarte, 123123******1234',
+  'Kreditkarte, 123123******2345',
+]
